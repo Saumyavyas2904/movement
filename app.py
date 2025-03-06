@@ -34,12 +34,12 @@ def upload_file():
 
 @app.route('/static/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(os.path.abspath(app.config['UPLOAD_FOLDER']), filename)
 
 @app.route('/viewer/<path:filepath>')
 def viewer(filepath):
     """ Serve an image from any directory """
-    return send_file(filepath, mimetype='image/jpeg')
+    return send_file(os.path.abspath(filepath), mimetype='image/jpeg')
 
 @app.route('/process_stitched_image', methods=["POST"])
 def process_stitched_image():
@@ -98,7 +98,7 @@ HTML_TEMPLATE = """
             document.body.appendChild(renderer.domElement);
 
             const textureLoader = new THREE.TextureLoader();
-            textureLoader.load("{{ image_url }}", function(texture) {
+            textureLoader.load(window.location.origin + "{{ image_url }}", function(texture) {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.repeat.x = -1;
 
@@ -172,4 +172,5 @@ HTML_TEMPLATE = """
 """
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Render sets PORT dynamically
+    app.run(host="0.0.0.0", port=port, debug=True)
